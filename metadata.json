@@ -1,0 +1,6 @@
+{
+  "name": "FUL Library Ledger",
+  "description": "A blockchain-based library book borrowing and tracking system for Federal University Lokoja.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

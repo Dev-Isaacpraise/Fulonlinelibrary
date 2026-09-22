@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-page: #FFFFFF;
+    --bg-surface: #FAFAFA;
+    --bg-card: #FFFFFF;
+    --text-main: #1A1A1A;
+    --text-muted: #666666;
+    --border-color: #E5E5E5;
+    
+    /* Secondary Accent (Teal) */
+    --accent-teal: #0F766E;
+    --accent-teal-subtle: #F0FDFA;
+    --accent-teal-border: #99F6E4;
+    --accent-teal-glow: rgba(15, 118, 110, 0.08);
+
+    /* Functional Status */
+    --status-due-soon: #EA580C;
+    --status-danger: #DC2626;
+
+    /* Primary button: near-black fill with white text */
+    --btn-primary-bg: #1A1A1A;
+    --btn-primary-text: #FFFFFF;
+  }
+
+  * {
+    border-color: var(--border-color);
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Typography Utility Classes */
+.font-serif-academic {
+  font-family: "Newsreader", "Plus Jakarta Sans", Georgia, serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
+}
+
+.font-mono-ledger {
+  font-family: "JetBrains Mono", monospace;
+  font-feature-settings: "zero" 1;
+}
+
+/* Custom Scrollbar for Ledger Lists */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
