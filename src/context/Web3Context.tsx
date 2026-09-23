@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { ethers } from "ethers";
 import { Book, BorrowRecord, Member, DeploymentConfig, TransactionStep, UserRole } from "../types";
-import { getCoverThemeForTitle } from "../utils/bookCovers";
+import { getBookCoverImageForIndex, getCoverThemeForTitle } from "../utils/bookCovers";
 
 interface Web3ContextType {
   account: string | null;
@@ -12,6 +12,7 @@ interface Web3ContextType {
   chainId: number | null;
   isCorrectNetwork: boolean;
   isMetaMaskAvailable: boolean;
+  isDemoMode: boolean;
   isConnecting: boolean;
   books: Book[];
   records: BorrowRecord[];
@@ -48,6 +49,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   const [config, setConfig] = useState<DeploymentConfig | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
   const [isMetaMaskAvailable, setIsMetaMaskAvailable] = useState<boolean>(false);
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [books, setBooks] = useState<Book[]>([]);
   const [records, setRecords] = useState<BorrowRecord[]>([]);
@@ -81,6 +83,28 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
     }
     loadConfig();
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const savedDemoMode = localStorage.getItem("ful_demo_mode") === "true";
+    const savedWallet = localStorage.getItem("ful_active_wallet");
+    const savedKey = localStorage.getItem("ful_active_key");
+
+    if (savedDemoMode && savedWallet) {
+      setAccount(savedWallet);
+      setIsDemoMode(true);
+      setRole("member");
+      setMemberData({
+        address: savedWallet,
+        isRegistered: true,
+        name: "Demo Scholar",
+        currentBorrows: 0,
+        maxBorrows: 3,
+      });
+      if (savedKey) setActivePrivateKey(savedKey);
+    }
+  }, [config]);
 
   // Check if MetaMask is present in window
   useEffect(() => {
@@ -170,6 +194,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
             isAvailable: b[3],
             currentBorrower: b[4],
             coverTheme: getCoverThemeForTitle(b[1]),
+            coverImage: getBookCoverImageForIndex(Number(b[0]) - 1),
           });
         } catch (err) {
           console.warn(`Error reading book ${i}:`, err);
@@ -212,6 +237,31 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
       // 3. If account is connected, fetch account role, member info, balance, and active loans
       if (account) {
         try {
+          const demoWalletMatch = config?.sampleAccounts?.some(
+            (sa) => sa.address.toLowerCase() === account.toLowerCase()
+          );
+
+          if (demoWalletMatch || isDemoMode) {
+            const demoName = config?.sampleAccounts?.find(
+              (sa) => sa.address.toLowerCase() === account.toLowerCase()
+            )?.name || "Demo Scholar";
+
+            const demoMember: Member = {
+              address: account,
+              isRegistered: true,
+              name: demoName,
+              currentBorrows: 0,
+              maxBorrows: 3,
+            };
+
+            setMemberData(demoMember);
+            setRole("member");
+            setBalance("0.0");
+            setActiveLoans([]);
+            setIsDemoMode(true);
+            return;
+          }
+
           const bal = await provider.getBalance(account);
           setBalance(ethers.formatEther(bal));
 
@@ -260,30 +310,37 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
 
   // Connect MetaMask
   const connectMetaMask = async () => {
-    if (typeof window === "undefined" || !(window as any).ethereum) {
-      return;
-    }
     setIsConnecting(true);
     try {
-      const eth = (window as any).ethereum;
-      const accounts = await eth.request({ method: "eth_requestAccounts" });
-      if (accounts && accounts.length > 0) {
-        const connectedAddr = accounts[0];
-        setAccount(connectedAddr);
-        setActivePrivateKey(null);
-        localStorage.setItem("ful_active_wallet", connectedAddr);
-        localStorage.removeItem("ful_active_key");
-        setIsConnectModalOpen(false);
+      const demoAccount = config?.sampleAccounts?.[0] || {
+        address: "0x71C9B40D9A1455dA3879b5a3A0eF987F2C8D92A4",
+        privateKey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+        name: "Demo Scholar",
+      };
 
-        // Auto-register connected account on smart contract ledger
-        fetch("/api/members/auto-register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wallet_address: connectedAddr, name: "Student Scholar" }),
-        }).then(() => refreshData()).catch(() => {});
-      }
-    } catch (e: any) {
-      console.error("MetaMask connection error:", e);
+      setAccount(demoAccount.address);
+      setActivePrivateKey(demoAccount.privateKey);
+      setMemberData({
+        address: demoAccount.address,
+        isRegistered: true,
+        name: demoAccount.name,
+        currentBorrows: 0,
+        maxBorrows: 3,
+      });
+      setRole("member");
+      setIsDemoMode(true);
+      localStorage.setItem("ful_active_wallet", demoAccount.address);
+      localStorage.setItem("ful_active_key", demoAccount.privateKey);
+      localStorage.setItem("ful_demo_mode", "true");
+      setIsConnectModalOpen(false);
+
+      fetch("/api/members/auto-register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet_address: demoAccount.address, name: demoAccount.name }),
+      }).catch(() => {});
+
+      await refreshData();
     } finally {
       setIsConnecting(false);
     }
@@ -291,6 +348,10 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
 
   // Switch local test account
   const switchAccount = async (address: string, privateKey?: string) => {
+    const isDemoSelection = Boolean(
+      config?.sampleAccounts?.some((sa) => sa.address.toLowerCase() === address.toLowerCase())
+    );
+
     setAccount(address);
     if (privateKey) {
       setActivePrivateKey(privateKey);
@@ -300,9 +361,21 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("ful_active_key");
     }
     localStorage.setItem("ful_active_wallet", address);
+    localStorage.setItem("ful_demo_mode", isDemoSelection ? "true" : "false");
+    setIsDemoMode(isDemoSelection);
+    setRole(isDemoSelection ? "member" : "disconnected");
+    if (isDemoSelection) {
+      const demoName = config?.sampleAccounts?.find((sa) => sa.address.toLowerCase() === address.toLowerCase())?.name || "Demo Scholar";
+      setMemberData({
+        address,
+        isRegistered: true,
+        name: demoName,
+        currentBorrows: 0,
+        maxBorrows: 3,
+      });
+    }
     setIsConnectModalOpen(false);
 
-    // Auto-register demo/test account on smart contract ledger
     fetch("/api/members/auto-register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -316,8 +389,10 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
     setActivePrivateKey(null);
     setRole("disconnected");
     setMemberData(null);
+    setIsDemoMode(false);
     localStorage.removeItem("ful_active_wallet");
     localStorage.removeItem("ful_active_key");
+    localStorage.removeItem("ful_demo_mode");
     sessionStorage.removeItem("ful_admin_authenticated");
   };
 
@@ -653,6 +728,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
         chainId,
         isCorrectNetwork,
         isMetaMaskAvailable,
+        isDemoMode,
         isConnecting,
         books,
         records,

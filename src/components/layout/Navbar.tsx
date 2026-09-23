@@ -18,6 +18,7 @@ export const Navbar: React.FC = () => {
     disconnect,
     isMetaMaskAvailable,
     isCorrectNetwork,
+    isDemoMode,
     switchToLocalNetwork,
     openConnectModal,
   } = useWeb3();
@@ -82,6 +83,13 @@ export const Navbar: React.FC = () => {
 
         {/* Right: Actions & Identity */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {isDemoMode && (
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-[#E5E5E5] bg-[#FAFAFA] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#666666]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#0F766E]" />
+              Demo Mode
+            </span>
+          )}
+
           {/* Wrong network alert banner button */}
           {!isCorrectNetwork && (
             <Button

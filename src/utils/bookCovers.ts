@@ -1,4 +1,51 @@
+import demoCoverImage from "../assets/images/university_library_reading_room_1789861136286.jpg";
+import cover0 from "../assets/images/0.jpeg";
+import cover2 from "../assets/images/2.jpeg";
+import cover3 from "../assets/images/3.jpeg";
+import cover4 from "../assets/images/4.jpeg";
+import cover5 from "../assets/images/5.jpeg";
+import cover6 from "../assets/images/6.jpeg";
+import cover7 from "../assets/images/7.jpeg";
+import cover8 from "../assets/images/8.jpeg";
+import cover9 from "../assets/images/9.jpeg";
+import cover11 from "../assets/images/11.jpeg";
+import cover22 from "../assets/images/22.jpeg";
+import cover33 from "../assets/images/33.jpeg";
+import cover44 from "../assets/images/44.jpeg";
+import cover53 from "../assets/images/53.jpeg";
+import cover55 from "../assets/images/55.jpeg";
+import cover57 from "../assets/images/57.jpeg";
+import coverWhatsApp1 from "../assets/images/WhatsApp Image 2026-09-23 at 17.59.36.jpeg";
+import coverWhatsApp2 from "../assets/images/WhatsApp Image 2026-09-23 at 18.00.21.jpeg";
 import { BookCoverTheme } from "../types";
+
+export const DEMO_CATALOG_COVER = demoCoverImage;
+export const BOOK_COVER_IMAGES = [
+  cover0,
+  cover2,
+  cover3,
+  cover4,
+  cover5,
+  cover6,
+  cover7,
+  cover8,
+  cover9,
+  cover11,
+  cover22,
+  cover33,
+  cover44,
+  cover53,
+  cover55,
+  cover57,
+  coverWhatsApp1,
+  coverWhatsApp2,
+  demoCoverImage,
+];
+
+export function getBookCoverImageForIndex(index: number): string {
+  if (!BOOK_COVER_IMAGES.length) return DEMO_CATALOG_COVER;
+  return BOOK_COVER_IMAGES[Math.abs(index) % BOOK_COVER_IMAGES.length];
+}
 
 // Palette conforms strictly to:
 // "Pick each cover from a limited neutral set (charcoal, slate, stone, off-white, plus occasionally the teal) using a hash of the title; serif title on the cover, author beneath, a thin spine line and subtle texture."

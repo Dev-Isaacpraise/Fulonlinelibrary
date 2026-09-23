@@ -5,6 +5,7 @@ export interface Book {
   isAvailable: boolean;
   currentBorrower: string;
   coverTheme?: BookCoverTheme;
+  coverImage?: string;
 }
 
 export interface BookCoverTheme {

@@ -269,14 +269,12 @@ export const CataloguePage: React.FC = () => {
               className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-[#FAFAFA] transition-colors"
             >
               <div className="flex items-start gap-4">
-                <div
-                  className="w-10 h-14 rounded-[4px] flex-shrink-0 flex items-center justify-center font-serif-academic text-xs font-bold border border-black/10"
-                  style={{
-                    backgroundColor: book.coverTheme?.bg || "#1C1C1E",
-                    color: book.coverTheme?.text || "#F5F5F4",
-                  }}
-                >
-                  #{book.id}
+                <div className="w-10 h-14 rounded-[4px] flex-shrink-0 overflow-hidden border border-black/10 relative">
+                  <img
+                    src={book.coverImage || ""}
+                    alt={`${book.title} cover`}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 <div>
                   <h4 className="font-serif-academic text-base font-medium text-[#1A1A1A]">
@@ -349,14 +347,12 @@ export const CataloguePage: React.FC = () => {
           <div className="space-y-5">
             {/* Book Summary Card */}
             <div className="p-4 rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] flex items-start gap-3">
-              <div
-                className="w-12 h-16 rounded-[4px] flex items-center justify-center font-serif-academic text-xs font-bold border border-black/10 flex-shrink-0"
-                style={{
-                  backgroundColor: selectedBookToBorrow.coverTheme?.bg,
-                  color: selectedBookToBorrow.coverTheme?.text,
-                }}
-              >
-                #{selectedBookToBorrow.id}
+              <div className="w-12 h-16 rounded-[4px] overflow-hidden border border-black/10 flex-shrink-0">
+                <img
+                  src={selectedBookToBorrow.coverImage || ""}
+                  alt={`${selectedBookToBorrow.title} cover`}
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div>
                 <h4 className="font-serif-academic text-base font-medium text-[#1A1A1A]">
